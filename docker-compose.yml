@@ -8,8 +8,11 @@ services:
       POSTGRES_PASSWORD: $DIGDAG_DB_USER
       POSTGRES_USER: $DIGDAG_DB_PASSWORD
       POSTGRES_DB: $DIGDAG_DB_NAME
-    # volumes:
-      # - ./psql/init-db.d:/docker-entrypoint-initdb.d
+    volumes:
+      - ./psql/init-db.d:/docker-entrypoint-initdb.d
+      # You can uncomment the following code to persist psql data.
+      # - ./psql:/var/lib/postgresql/data
+
   # http://sosedoff.github.io/pgweb/
   pgweb:
     env_file: .env
