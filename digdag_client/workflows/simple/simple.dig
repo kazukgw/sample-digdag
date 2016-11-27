@@ -1,0 +1,25 @@
+timezone: Asia/Tokyo
+
+schedule:
+  minutes_interval>: 3
+
+_export:
+  mail:
+    host: mailhog
+    port: 1025
+    from: "simple@simple.com"
+
++step1:
+  sh>: echo "$(date +"[%F %T]") task start" >> simple.log
+
++step2:
+  py>: simple.step2
+
++step3:
+  py>: simple.step3
+
++mail:
+  mail>:
+    data: this is email body!
+  subject: simple workflow finish
+  to: ["simple@simple.com"]

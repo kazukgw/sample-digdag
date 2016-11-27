@@ -1,0 +1,62 @@
+version: '2'
+
+services:
+  psql:
+    env_file: .env
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: $DIGDAG_DB_USER
+      POSTGRES_USER: $DIGDAG_DB_PASSWORD
+      POSTGRES_DB: $DIGDAG_DB_NAME
+    # volumes:
+      # - ./psql/init-db.d:/docker-entrypoint-initdb.d
+
+  mailhog:
+    image: mailhog/mailhog
+    expose:
+      - "1025"
+    ports:
+      - "8025:8025"
+
+  digdag:
+    env_file: .env
+    links:
+      - psql
+      - mailhog
+    build:
+      context: ./digdag
+      args:
+        APKPKGS: ruby
+        EMBULK_VERSION: latest
+        EMBULK_GEMS:
+        DIGDAG_VERSION: latest
+        PIP_PKGS:
+        HOST_DOCKER_GROUP: docker
+    environment:
+      DIGDAG_BIND: digdag
+      DIGDAG_PORT: 65432
+      DIGDAG_DB_HOST: psql
+      DIGDAG_DB_PORT: 5432
+      DIGDAG_DB_USER: $DIGDAG_DB_USER
+      DIGDAG_DB_PASSWORD: $DIGDAG_DB_PASSWORD
+      DIGDAG_DB_NAME: $DIGDAG_DB_NAME
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./digdag/properties:/home/digdag/properties
+      - ./digdag/scripts:/home/digdag/scripts
+    command: scripts/wait-for-it.sh psql:5432 -t 30 -- scripts/digdag-start.sh
+    ports:
+      - "65432"
+
+  digdag_client:
+    links:
+      - digdag
+      - mailhog
+    build:
+      context: digdag_client
+      args:
+        DIGDAG_VERSION: latest
+    volumes:
+      - ./digdag_client/workflows:/root/workflows
+    command: tail -f /dev/null
+
