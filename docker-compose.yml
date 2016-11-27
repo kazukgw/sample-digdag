@@ -25,6 +25,7 @@ services:
     ports:
       - "8081:8081"
 
+  # https://github.com/mailhog/MailHog
   mailhog:
     image: mailhog/mailhog
     expose:
