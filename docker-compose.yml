@@ -10,6 +10,17 @@ services:
       POSTGRES_DB: $DIGDAG_DB_NAME
     # volumes:
       # - ./psql/init-db.d:/docker-entrypoint-initdb.d
+  # http://sosedoff.github.io/pgweb/
+  pgweb:
+    env_file: .env
+    links:
+      - psql
+    image: sosedoff/pgweb
+    command: /usr/bin/pgweb --bind=0.0.0.0 --listen=8081
+    environment:
+      DATABASE_URL: postgres://$DIGDAG_DB_USER:$DIGDAG_DB_PASSWORD@psql:5432/digdag?sslmode=disable
+    ports:
+      - "8081:8081"
 
   mailhog:
     image: mailhog/mailhog
